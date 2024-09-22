@@ -27,7 +27,7 @@ const User = mongoose.model('User', UserSchema);
 // Spotify API credentials
 const client_id = process.env.SPOTIFY_CLIENT_ID;
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
-let redirect_uri = process.env.PRODUCTION_REDIRECT_URI || 'http://localhost:3000/callback';
+const redirect_uri = process.env.PRODUCTION_REDIRECT_URI || 'http://localhost:3000/callback'; // Update this when you deploy
 
 // Swagger setup
 const swaggerOptions = {
@@ -126,12 +126,46 @@ app.get('/callback', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /token:
+ *   get:
+ *     description: Obtain Spotify access token using client credentials
+ *     responses:
+ *       200:
+ *         description: Access token obtained successfully
+ *       500:
+ *         description: Error obtaining access token
+ */
+app.get('/token', async (req, res) => {
+  const client_credentials = `${client_id}:${client_secret}`;
+  const client_credentials_base64 = Buffer.from(client_credentials).toString('base64');
+
+  try {
+    const response = await axios.post('https://accounts.spotify.com/api/token', null, {
+      headers: {
+        'Authorization': `Basic ${client_credentials_base64}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      params: {
+        'grant_type': 'client_credentials'
+      }
+    });
+
+    if (response.status === 200) {
+      const access_token = response.data.access_token;
+      res.json({ access_token });
+    } else {
+      res.status(response.status).send('Error obtaining access token');
+    }
+  } catch (error) {
+    console.error('Error:', error.message);
+    res.status(500).send('Error obtaining access token');
+  }
+});
+
 // TODO: Add routes for recommendations here
 
 app.listen(port, () => {
-    if(process.env.MODE==='production'){
-        redirect_uri = process.env.PRODUCTION_REDIRECT_URI;
-        console.log('Production mode');
-    }
-    console.log(`Server running on ${process.env.PRODUCTION_URI || `http://localhost:${port}`}`);
+  console.log(`Server running on http://localhost:${port}`);
 });
