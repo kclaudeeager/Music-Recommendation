@@ -42,6 +42,10 @@ const swaggerOptions = {
       {
         url: `http://localhost:${port}`,
         description: 'Local server'
+      },
+      {
+        url: `https://your-app-name.herokuapp.com`,
+        description: 'Heroku server'
       }
     ]
   },
