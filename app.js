@@ -27,7 +27,7 @@ const User = mongoose.model('User', UserSchema);
 // Spotify API credentials
 const client_id = process.env.SPOTIFY_CLIENT_ID;
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
-const redirect_uri = process.env.REDIRECT_URI || 'http://localhost:3000/callback'; // Update this when you deploy
+let redirect_uri = process.env.PRODUCTION_REDIRECT_URI || 'http://localhost:3000/callback';
 
 // Swagger setup
 const swaggerOptions = {
@@ -44,8 +44,8 @@ const swaggerOptions = {
         description: 'Local server'
       },
       {
-        url: `https://your-app-name.herokuapp.com`,
-        description: 'Heroku server'
+        url: `https://music-recommendation-vyd9.onrender.com`,
+        description: 'Production server'
       }
     ]
   },
@@ -129,5 +129,9 @@ app.get('/callback', async (req, res) => {
 // TODO: Add routes for recommendations here
 
 app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+    if(process.env.MODE==='production'){
+        redirect_uri = process.env.PRODUCTION_REDIRECT_URI;
+        console.log('Production mode');
+    }
+    console.log(`Server running on ${process.env.PRODUCTION_URI || `http://localhost:${port}`}`);
 });
